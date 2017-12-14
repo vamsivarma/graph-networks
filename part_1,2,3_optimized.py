@@ -5,14 +5,15 @@ Created on Wed Dec 13 19:43:33 2017
 @author: Vamsi Krishna Varma Gunturi
 """
 
+from collections import defaultdict
+from heapq import *
+
 import itertools
 import networkx as nx
 import json
 #import matplotlib.pyplot as plt
 data = json.load(open('reduced_dblp.json'))
 
-
-#print(len(data))
 
 #POINT 1
 
@@ -104,6 +105,9 @@ for author in authors_list:
        
 nx.draw(G)
 
+
+#POINT 2.1
+
 conference_name = 'conf/pkdd/2011-1'
 conf_details = conferences_map[conference_name]
 conference_id = conf_details[0] 
@@ -127,14 +131,54 @@ for author in conf_authors:
     print('betweenness centrality: ' +str(betweenness[author]))
     print('')
 
-#nx.draw(k)
+nx.draw(k)
 #nx.info(k)
     
-# PART 2- b
-### Point 2 b
-author_id=255206
+#POINT 2.2
+    
+author_name = "michel verleysen"
+author_id = authors_map[author_name]
 d=1 #if d>1 doesn't work
 #path=nx.single_source_shortest_path_length(G=G,source= author_id,cutoff=d)
 kk=nx.ego_graph(G=G,n= author_id, radius= d, undirected= True, center= True)
 
 nx.draw(kk)
+
+
+#POINT 3.1
+
+def shortest_path(G, start, end):
+    
+    dict1 = defaultdict(list)
+    for author1 in authors_list:
+        for author2 in G[author1].keys():
+            dict1[author1].append((author2, G[author1][author2]['weight']))
+    pathList = [[0,start,()]]
+    seen = set()
+    
+    while pathList:
+        (cost, vertex1, path) = heappop( pathList )
+        if vertex1 not in seen:
+            seen.add(vertex1)
+            path = (vertex1, path)
+            if vertex1 == end: 
+                return (cost, path)
+            for vertex2, weight in dict1[vertex1]:
+                if vertex2 not in seen:
+                    heappush(pathList, [cost+weight, vertex2, path])
+                    
+    pathList= list(pathList)
+    
+    return pathList
+
+aris_id = authors_map["aris anagnostopoulos"]
+
+author_name = "george brova"
+author_id = authors_map[author_name]
+
+
+try:
+    path=shortest_path(G, author_id, aris_id)    
+    print(path)
+except nx.NetworkXNoPath:
+    print('No path')
