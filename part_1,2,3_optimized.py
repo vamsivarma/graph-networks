@@ -108,7 +108,7 @@ nx.draw(G)
 
 #POINT 2.1
 
-conference_name = 'conf/pkdd/2011-1'
+conference_name = 'conf/pkdd/2011-1' #'conf/acmdis/2010'
 conf_details = conferences_map[conference_name]
 conference_id = conf_details[0] 
 conf_authors = conf_details[1]
@@ -137,6 +137,8 @@ nx.draw(k)
 #POINT 2.2
     
 author_name = "michel verleysen"
+#author_name = "paulo costa"
+
 author_id = authors_map[author_name]
 d=1 #if d>1 doesn't work
 #path=nx.single_source_shortest_path_length(G=G,source= author_id,cutoff=d)
@@ -171,14 +173,61 @@ def shortest_path(G, start, end):
     
     return pathList
 
+
+
 aris_id = authors_map["aris anagnostopoulos"]
+#aris_id = authors_map["daniel hackenberg"]
 
 author_name = "george brova"
+#author_name = "damien djaouti"
+
 author_id = authors_map[author_name]
 
 
 try:
+
     path=shortest_path(G, author_id, aris_id)    
-    print(path)
+
+    if(len(path)):
+        print(path)
+    else:
+        print('No path')
+
 except nx.NetworkXNoPath:
+
     print('No path')
+
+
+#POINT 3.2
+group_nodes = [270587, 270585, 524503, 365179, 33951, 112985, 364898, 255487, 166813, 250148]
+nodes_len = len(group_nodes)
+
+#Build a 2 dimentional matrix based on number of vertexes
+group_matrix = []
+for node in group_nodes:
+    
+    node_list = []
+    
+    for i in range(nodes_len):    
+        node_list.append(node)
+    
+    group_matrix.append(node_list)
+
+for i in range(nodes_len):
+    for j in range(i+1, nodes_len):
+         
+        s_p = shortest_path(G, group_nodes[i], group_nodes[j])
+        
+        if(len(s_p)):
+            group_matrix[i][j] = s_p[0]
+            group_matrix[j][i] = s_p[0]
+
+for i in range(nodes_len):
+    cur_grp_list = group_matrix[i]
+    
+    cur_grp_number = min(cur_grp_list)
+    
+    if(cur_grp_number == group_nodes[i]):
+        cur_grp_number = 0
+    
+    print("Group Number for: " + str(group_nodes[i]) + ' is: ' + str(cur_grp_number))
