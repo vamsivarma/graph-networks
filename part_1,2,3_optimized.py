@@ -103,7 +103,7 @@ for author in authors_list:
         
         G[author][author_edge]['weight']= 1-( len(num) / len(den) )   
        
-nx.draw(G)
+#nx.draw(G)
 
 
 #POINT 2.1
@@ -148,31 +148,38 @@ nx.draw(kk)
 
 
 #POINT 3.1
-
-def shortest_path(G, start, end):
+#@TODO: Need to improve the number of iterations here...
+def shortest_path_advanced(G, start, end):
     
     dict1 = defaultdict(list)
     for author1 in authors_list:
         for author2 in G[author1].keys():
-            dict1[author1].append((author2, G[author1][author2]['weight']))
-    pathList = [[0,start,()]]
+                dict1[author1].append((author2, G[author1][author2]['weight']))
+        
+        
+    pathList = [[0,[start,0],()]]
     seen = set()
     
+    pathInfoList = {}
+    
     while pathList:
-        (cost, vertex1, path) = heappop( pathList )
+        (cost, [vertex1, cur_cost], path) = heappop( pathList )
+        
+        pathInfoList[vertex1] = cur_cost
+        
         if vertex1 not in seen:
             seen.add(vertex1)
             path = (vertex1, path)
             if vertex1 == end: 
-                return (cost, path)
+                #return (cost, path)
+                break
+                
             for vertex2, weight in dict1[vertex1]:
-                if vertex2 not in seen:
-                    heappush(pathList, [cost+weight, vertex2, path])
+                    heappush(pathList, [cost+weight, [vertex2, cost+weight], path])
                     
     pathList= list(pathList)
     
-    return pathList
-
+    return pathInfoList
 
 
 aris_id = authors_map["aris anagnostopoulos"]
@@ -185,13 +192,20 @@ author_id = authors_map[author_name]
 
 
 try:
+    
+    path = shortest_path_advanced(G, author_id, aris_id)  
+    
+    print(path)
 
-    path=shortest_path(G, author_id, aris_id)    
-
-    if(len(path)):
-        print(path)
+    '''
+    if(len(path.keys())):
+        if path[aris_id]:
+            print(path[aris_id])
+        else:
+           print('No path') 
     else:
         print('No path')
+    '''
 
 except nx.NetworkXNoPath:
 
@@ -199,35 +213,95 @@ except nx.NetworkXNoPath:
 
 
 #POINT 3.2
-group_nodes = [270587, 270585, 524503, 365179, 33951, 112985, 364898, 255487, 166813, 250148]
-nodes_len = len(group_nodes)
+#@TODO: Check if using Numpy arrays will make this effiecient
+    
+    
+                
+subset_nodes = list(set([270587, 270585, 524503, 365179, 33951, 112985, 364898, 255487, 166813, 250148]))
+#subset_nodes = list(set([270587, 270585]))    
 
-#Build a 2 dimentional matrix based on number of vertexes
+subset_nodes_len = len(subset_nodes)
+
+authors_len = len(authors_list)
+
+#Build a 2 dimentional matrix based on total number of vertexes and subset
 group_matrix = []
-for node in group_nodes:
-    
-    node_list = []
-    
-    for i in range(nodes_len):    
-        node_list.append(node)
-    
-    group_matrix.append(node_list)
 
-for i in range(nodes_len):
-    for j in range(i+1, nodes_len):
-         
-        s_p = shortest_path(G, group_nodes[i], group_nodes[j])
+
+author_dist_status_map = {}
+
+
+def update_the_neighbour_nodes(author_id, author_index):
+    
+
+    for na in G[author_id].keys():
+        if G[author_id][na]['weight'] == 0.0 and not author_dist_status_map[na]:
+            
+            na_index = authors_list.index(na)
+            
+            if i in range(subset_nodes_len):
+                
+                cur_dist = group_matrix[author_index][i]
+                
+                if(cur_dist != author_id):
+                    group_matrix[na_index][i] = group_matrix[author_index][i]
+            
+            author_dist_status_map[na] = True
+
+
+for author in authors_list:
+    
+    author_list = []
+    author_dist_status_map[author] = False
+    
+    for i in range(subset_nodes_len):    
+        author_list.append(author)
+    
+    group_matrix.append(author_list)
+
+iterations = 0
+for i in range(authors_len):
+    cur_author = authors_list[i]
+    cur_author_dist_dict = {}
+    
+    if not author_dist_status_map[cur_author]:
+    
+        for j in range(subset_nodes_len):
+             
+            cur_subset_node = subset_nodes[j]
+            #cur_node_dist = cur_author
+            
+            if(cur_author != cur_subset_node):
+                
+                if cur_subset_node not in cur_author_dist_dict:
+                    
+                    iterations += 1
+                    
+                    s_p = shortest_path_advanced(G, cur_author, cur_subset_node)
+                
+                    if(len(s_p.keys())):
+                        cur_author_dist_dict.update(s_p)
+                        
+                        if cur_subset_node in cur_author_dist_dict:
+                            cur_node_dist = cur_author_dist_dict[cur_subset_node]
+                            
+                else:
+                    cur_node_dist =  cur_author_dist_dict[cur_subset_node]
+                
+                group_matrix[i][j] = cur_node_dist
         
-        if(len(s_p)):
-            group_matrix[i][j] = s_p[0]
-            group_matrix[j][i] = s_p[0]
+        author_dist_status_map[cur_author] = True
+        
+    update_the_neighbour_nodes(cur_author, i)
 
-for i in range(nodes_len):
+
+
+for i in range(authors_len):
     cur_grp_list = group_matrix[i]
     
     cur_grp_number = min(cur_grp_list)
     
-    if(cur_grp_number == group_nodes[i]):
+    if(cur_grp_number == authors_list[i]):
         cur_grp_number = 0
     
-    print("Group Number for: " + str(group_nodes[i]) + ' is: ' + str(cur_grp_number))
+    print("Group Number for: " + str(authors_list[i]) + ' is: ' + str(cur_grp_number))
