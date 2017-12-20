@@ -32,13 +32,18 @@ class Graph_Index:
     authors_list_ui = [] 
     conferences_list_ui = []
     
+    #Conference ID to Conference Name map
+    conf_rev_map = {}
+    
+    nodes_len = 100
+    
     def fetch_data(self):     
         self.data = json.load(open('reduced_dblp.json'))
     
     def build_graph(self):
         
         #POINT 1
-        for i in range(100):
+        for i in range(self.nodes_len):
             cur_conference = self.data[i]
             
             cur_conference_id = cur_conference['id_conference_int']
@@ -93,6 +98,7 @@ class Graph_Index:
             self.publications_dict[cur_publication_id]['id_conference_int'] = cur_conference_id
             self.conferences_list.append(cur_conference_id)
             
+            
     def formatAuthorListForUI(self):
         
         authors_ui = []
@@ -128,6 +134,10 @@ class Graph_Index:
             self.conferences_map[conf][1] = list(set(self.conferences_map[conf][1]))
             self.conferences_list_ui.append(cur_conf_dict)
             
+            self.conf_rev_map[cur_conf_dict['id']] = conf
+            
+            
+            
 
     def create_indexes(self):
 
@@ -147,6 +157,9 @@ class Graph_Index:
     def __init__(self):
         
         self.fetch_data()
+        
+        self.nodes_len = len(self.data)
+        
         self.build_graph()
         self.remove_duplicates()
         self.create_indexes()
@@ -157,60 +170,68 @@ gi = Graph_Index()
 
 class Graph_Operations:
     
-    subset_nodes = list(set([270587, 270585, 524503, 365179, 33951, 112985, 364898, 255487, 166813, 250148]))
+    operations_meta = {
+                'subset_nodes': list(set([270587, 270585, 524503, 365179, 33951, 112985, 364898, 255487, 166813, 250148])),
+                'conference_name': 'conf/pkdd/2011-1',
+                'hop_distance': 2,
+                'author_proximity_id': gi.authors_map['michel verleysen'], #paulo costa
+                'sp_author_id_1': gi.authors_map['aris anagnostopoulos'], #daniel hackenberg
+                'sp_author_id_2': gi.authors_map['george brova'] #damien djaouti
+            }
+    
+    
+    
     #subset_nodes = list(set([270587, 270585]))    
-
-    subset_nodes_len = len(subset_nodes)
+    subset_nodes_len = len(operations_meta['subset_nodes'])
 
     #Build a 2 dimentional matrix based on total number of vertexes and subset
     group_matrix = []
-
     author_dist_status_map = {}    
     
     authors_len = len(gi.authors_list)
-
-    def calculate_centralities(self):
+    
+    #POINT 2.1
+    def calculate_centralities(self, serverFlag):
         
-        #POINT 2.1
-        conference_name = 'conf/pkdd/2011-1' #'conf/acmdis/2010'
-        conf_details = gi.conferences_map[conference_name]
-        conference_id = conf_details[0] 
+        conf_name = self.operations_meta['conference_name']    
+        
+        conf_details = gi.conferences_map[conf_name] 
         conf_authors = conf_details[1]
         
         k = gi.G.subgraph(conf_authors)
         
         degree = nx.degree_centrality(k)
-        
         closeness = nx.closeness_centrality(k)
-        
         betweenness = nx.betweenness_centrality(k)
-        # modify this part adding a dictonary
-        print('Some centralities measures for nodes selected in our subgraph!')
+        
+        if serverFlag:
+            # modify this part adding a dictonary
+            print('Some centralities measures for nodes selected in our subgraph!')
         
         for author in conf_authors:
-            print('author_id: ' + str(author))
-            print('')
-            print('degree centrality: ' +str(degree[author]))
-            print('closeness centrality: ' +str(closeness[author]))
-            print('betweenness centrality: ' +str(betweenness[author]))
-            print('')
+            
+            if serverFlag:
+                
+                print('author_id: ' + str(author))
+                print('')
+                print('degree centrality: ' +str(degree[author]))
+                print('closeness centrality: ' +str(closeness[author]))
+                print('betweenness centrality: ' +str(betweenness[author]))
+                print('')
         
-        nx.draw(k)
-        #nx.info(k)
+        
+        if serverFlag:
+            nx.draw(k)
+            #nx.info(k)
     
-    def calculate_subgraph(self):
-        #POINT 2.2
-        author_name = "michel verleysen"
-        #author_name = "paulo costa"
-        
-        author_id = gi.authors_map[author_name]
-        
-        d=1 #if d>1 doesn't work
+    #POINT 2.2 
+    def calculate_subgraph(self, serverFlag):
         
         #path=nx.single_source_shortest_path_length(G=G,source= author_id,cutoff=d)
-        kk=nx.ego_graph(G= gi.G, n= author_id, radius= d, undirected= True, center= True)
+        kk=nx.ego_graph(G= gi.G, n= self.operations_meta['author_proximity_id'], radius= self.operations_meta['hop_distance'], undirected= True, center= True)
         
-        nx.draw(kk)
+        if serverFlag:
+            nx.draw(kk)
 
 
     #POINT 3.1
@@ -248,21 +269,14 @@ class Graph_Operations:
         return pathInfoList
 
 
-    def find_path_given_author(self):
-        aris_id = gi.authors_map["aris anagnostopoulos"]
-        #aris_id = authors_map["daniel hackenberg"]
-        
-        author_name = "george brova"
-        #author_name = "damien djaouti"
-        
-        author_id = gi.authors_map[author_name]
-        
+    def find_path_given_author(self, serverFlag): 
         
         try:
             
-            path = self.shortest_path_advanced(gi.G, author_id, aris_id)  
+            path = self.shortest_path_advanced(gi.G, self.operations_meta['sp_author_id_1'], self.operations_meta['sp_author_id_2'])  
             
-            print(path)
+            if serverFlag:
+                print(path)
         
             '''
             if(len(path.keys())):
@@ -275,8 +289,11 @@ class Graph_Operations:
             '''
         
         except nx.NetworkXNoPath:
-        
-            print('No path')
+            
+            if serverFlag:
+                print('No path')
+                
+        return path
     
     def update_the_neighbour_nodes(self, author_id, author_index):
     
@@ -309,7 +326,7 @@ class Graph_Operations:
 
     #POINT 3.2
     #@TODO: Check if using Numpy arrays will make this effiecient    
-    def find_graph_number(self):
+    def find_graph_number(self, serverFlag):
             self.init_group_matrix()
             
 
@@ -322,7 +339,7 @@ class Graph_Operations:
                 
                     for j in range(self.subset_nodes_len):
                          
-                        cur_subset_node = self.subset_nodes[j]
+                        cur_subset_node = self.operations_meta['subset_nodes'][j]
                         cur_node_dist = cur_author
                         
                         if(cur_author != cur_subset_node):
@@ -358,18 +375,21 @@ class Graph_Operations:
                 if(cur_grp_number == gi.authors_list[i]):
                     cur_grp_number = 0
                 
-                print("Group Number for: " + str(gi.authors_list[i]) + ' is: ' + str(cur_grp_number))
+                if serverFlag:
+                    print("Group Number for: " + str(gi.authors_list[i]) + ' is: ' + str(cur_grp_number))
     
                 
     def __init__(self):
         
-        self.calculate_centralities()
-        self.calculate_subgraph()
-        self.find_path_given_author()
-        self.find_graph_number()
+        #self.calculate_centralities(True)
+        #self.calculate_subgraph(True)
+        #self.find_path_given_author(True)
+        
+        pass
+        #self.find_graph_number(True)
         
         
-#go = Graph_Operations()
+go = Graph_Operations()
 
 
 class Graph_Web:
@@ -381,6 +401,37 @@ class Graph_Web:
     #Returns the conferences list based on the data stored in G
     def get_conferences(self):
         return gi.conferences_list_ui
+    
+    #Need to do proper exception handling here...
+    def find_centralities(self, conf_id):
+        
+        go.operations_meta['conference_name']  = gi.conf_rev_map[conf_id]
+        
+        return go.calculate_centralities(False)
+    
+    def find_proximity(self, proximity_id, hop_distance):
+        
+        self.operations_meta['author_proximity_id'] = proximity_id
+        self.operations_meta['hop_distance'] = hop_distance
+        
+        return go.calculate_subgraph(False)
+    
+    def find_shortest_path(self, author1_id, author2_id):
+        
+        self.operations_meta['sp_author_id_1'] = author1_id
+        self.operations_meta['sp_author_id_2'] = author2_id
+        
+        return go.find_path_given_author(False)
+    
+    def find_author_group_numbers(self, author_subset):
+        
+        self.operations_meta['subset_nodes'] = author_subset
+        
+        return go.find_graph_number(False)
+        
+        
+        
+        
     
 
 gw = Graph_Web()

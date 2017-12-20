@@ -98,3 +98,11 @@
 }
 
 
+.graph-results-holder {
+  margin-top: 40px;
+}
+
+#example_wrapper, #example_group_wrapper {
+  padding: 10px;
+}
+

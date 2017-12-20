@@ -9,9 +9,17 @@
 
  		<link rel="stylesheet" href="static/lib/css/select2.min.css" type="text/css">
 
+ 		<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" type="text/css">
+
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 		<script src="static/lib/js/select2.min.js"></script>
+
+		<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+
+		
+		
+
 
 		<link rel="stylesheet" href="static/css/graph_navigation_styles.css" type="text/css">
 
@@ -27,8 +35,6 @@
 	</head>
 
 	<body>
-
-
 
 		<!-- Need to clean the markup -->
 		<div id="graph-search-holder">
@@ -55,6 +61,7 @@
 
 				<fieldset>
 					<select id="conferences-select" class="gs-select-common" placeholder="Loading Conferences...">
+						<option disabled selected value>Select a conference</option>
       				</select>
       			</fieldset>
 
@@ -62,13 +69,16 @@
 		         	<input id="graph_sbc" class="button button-primary graph_btn" name="graph_sbc_btn" type="button" value="Search Conference" />
 		       </fieldset>
 
-				<div class="graph-results-holder"></div>
+				<div class="graph-results-holder">
+					<table id="example" class="display" width="100%"></table>
+				</div>
 			</div>
 
 			<div id="searchByAuthor" class="tabcontent">
 				<h3>Select an author and hop count to find his neighboring authors with in the Graph </h3>
 				<fieldset>
 					<select id="authors-proximity-select" class="gs-select-common" placeholder="Loading Authors...">
+						<option disabled selected value>Select an author</option>
       				</select>
       			</fieldset>
       			<fieldset>
@@ -88,12 +98,14 @@
 				<h3>Select Author 1:</h3>
 				<fieldset>
 					<select id="authors-sp-select1" class="gs-select-common" placeholder="Loading Authors...">
+						<option disabled selected value>Select Author 1</option>
       				</select>
       			</fieldset>
 
       			<h3>Select Author 2:</h3>
       			<fieldset>
 					<select id="authors-sp-select2" class="gs-select-common" placeholder="Loading Authors...">
+						<option disabled selected value>Select Author 2</option>
       				</select>
       			</fieldset>
 
@@ -116,7 +128,9 @@
 		         	<input id="graph_gn" class="button button-primary graph_btn" name="graph_sba_btn" type="button" value="Get Group Numbers for Authors" />
 		       </fieldset>
 
-				<div class="graph-results-holder"></p>
+				<div class="graph-results-holder">
+					<table id="example_group" class="display" width="100%"></table>
+				</div>
 			</div>
 
 		</div>
