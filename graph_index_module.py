@@ -29,6 +29,9 @@ class Graph_Index:
     authors_map = {}
     data = []
     
+    authors_list_ui = [] 
+    conferences_list_ui = []
+    
     def fetch_data(self):     
         self.data = json.load(open('reduced_dblp.json'))
     
@@ -89,16 +92,42 @@ class Graph_Index:
             
             self.publications_dict[cur_publication_id]['id_conference_int'] = cur_conference_id
             self.conferences_list.append(cur_conference_id)
+            
+    def formatAuthorListForUI(self):
+        
+        authors_ui = []
+        
+        for author in self.authors_map:
+            cur_author_dict = {
+                    "id": self.authors_map[author],
+                    "text": author.title()
+                    }
+            authors_ui.append(cur_author_dict)
+            
+        return authors_ui
+            
 
     def remove_duplicates(self):
        
         #Removing the duplicate entries
         self.conferences_list = list(set(self.conferences_list))
         self.authors_list = list(set(self.authors_list))   
+        
+        self.authors_list_ui = self.formatAuthorListForUI()
+        
+        self.conferences_list_ui = []
+        
+        
 
 
         for conf in self.conferences_map:
+            cur_conf_dict = {
+                    "id": self.conferences_map[conf][0],
+                    "text": conf.title()  
+                    }
             self.conferences_map[conf][1] = list(set(self.conferences_map[conf][1]))
+            self.conferences_list_ui.append(cur_conf_dict)
+            
 
     def create_indexes(self):
 
@@ -150,11 +179,11 @@ class Graph_Operations:
         
         k = gi.G.subgraph(conf_authors)
         
-        degree=nx.degree_centrality(k)
+        degree = nx.degree_centrality(k)
         
-        closeness=nx.closeness_centrality(k)
+        closeness = nx.closeness_centrality(k)
         
-        betweenness=nx.betweenness_centrality(k)
+        betweenness = nx.betweenness_centrality(k)
         # modify this part adding a dictonary
         print('Some centralities measures for nodes selected in our subgraph!')
         
@@ -340,23 +369,25 @@ class Graph_Operations:
         self.find_graph_number()
         
         
-go = Graph_Operations()
+#go = Graph_Operations()
 
 
 class Graph_Web:
     
     #Returns the authors list based on the data stored in G
-    def get_authors():
-        return gi.authors_list
+    def get_authors(self):
+        return gi.authors_list_ui
     
     #Returns the conferences list based on the data stored in G
-    def get_conferences():
-        return gi.conferences_map
+    def get_conferences(self):
+        return gi.conferences_list_ui
     
 
 gw = Graph_Web()
     
-    
+
+#print(gw.get_authors()) 
+#print(gw.get_conferences()) 
 
 
 

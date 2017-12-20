@@ -1,0 +1,124 @@
+<html>
+
+ 	<head>
+
+ 		<title>Analyzing Graph Networks</title>
+ 		
+ 		<!--[if IE]><link rel="shortcut icon" href="static/images/graph-fav.ico"><![endif]-->
+ 		<link rel="icon" href="static/images/graph-fav.ico">
+
+ 		<link rel="stylesheet" href="static/lib/css/select2.min.css" type="text/css">
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+		<script src="static/lib/js/select2.min.js"></script>
+
+		<link rel="stylesheet" href="static/css/graph_navigation_styles.css" type="text/css">
+
+		<link rel="stylesheet" href="static/css/graph_loader_styles.css" type="text/css">
+
+		<link rel="stylesheet" href="static/css/graph_common_styles.css" type="text/css">
+
+		<link rel="stylesheet" href="static/css/graph_styles.css" type="text/css">
+
+		<link rel="stylesheet" href="static/css/graph_select2_customize.css" type="text/css">
+
+		<script type="text/javascript" src="static/js/graph_script.js"></script>
+	</head>
+
+	<body>
+
+
+
+		<!-- Need to clean the markup -->
+		<div id="graph-search-holder">
+
+			<div id="ss-overlay">
+				<div id="ss-loader"></div>
+			</div>
+
+
+			<!-- Tab links -->
+			<div class="tab">
+				<button class="tablinks" id="defaultOpen" onclick="graphModule.openGraphTab(event, 'searchByConference', 0)">Search By Conference</button>
+				<button class="tablinks" onclick="graphModule.openGraphTab(event, 'searchByAuthor', 1)">Search By Author</button>
+				<button class="tablinks" onclick="graphModule.openGraphTab(event, 'findShortestPath', 2)">Find Shortest Path</button>
+				<button class="tablinks" onclick="graphModule.openGraphTab(event, 'findGroupNumber', 3)">Find Group Number</button>
+			</div>
+
+			<!-- Tab content -->
+
+			<!-- Search By Conference Content -->
+
+			<div id="searchByConference" class="tabcontent">
+				<h3>Select a conference to analyze author centrality with in that conference</h3>
+
+				<fieldset>
+					<select id="conferences-select" class="gs-select-common" placeholder="Loading Conferences...">
+      				</select>
+      			</fieldset>
+
+      			<fieldset>
+		         	<input id="graph_sbc" class="button button-primary graph_btn" name="graph_sbc_btn" type="button" value="Search Conference" />
+		       </fieldset>
+
+				<div class="graph-results-holder"></div>
+			</div>
+
+			<div id="searchByAuthor" class="tabcontent">
+				<h3>Select an author and hop count to find his neighboring authors with in the Graph </h3>
+				<fieldset>
+					<select id="authors-proximity-select" class="gs-select-common" placeholder="Loading Authors...">
+      				</select>
+      			</fieldset>
+      			<fieldset>
+		      	 <b class="hc-label">Hop Count:</b>
+		         <input type="number" id="graph_hc" min="2" value="2">
+		      </fieldset>
+
+      			<fieldset>
+		         	<input id="graph_sba" class="button button-primary graph_btn" name="graph_sba_btn" type="button" value="Get Authors in Proximity" />
+		       </fieldset>
+
+				<div class="graph-results-holder"></div> 
+			</div>
+
+			<div id="findShortestPath" class="tabcontent">
+				<h3>Select an 2 authors from the drop downs to find their shortest path</h3>
+				<h3>Select Author 1:</h3>
+				<fieldset>
+					<select id="authors-sp-select1" class="gs-select-common" placeholder="Loading Authors...">
+      				</select>
+      			</fieldset>
+
+      			<h3>Select Author 2:</h3>
+      			<fieldset>
+					<select id="authors-sp-select2" class="gs-select-common" placeholder="Loading Authors...">
+      				</select>
+      			</fieldset>
+
+      			<fieldset>
+		         	<input id="graph_sp" class="button button-primary graph_btn" name="graph_sba_btn" type="button" value="Get Shortest Path" />
+		       </fieldset>
+
+				<div class="graph-results-holder"></div> 
+			</div>
+
+			<div id="findGroupNumber" class="tabcontent">
+				<h3>Select authors to calculate Group Number of every author wrto them</h3>
+				<h3>Select Author Group</h3>
+      			<fieldset>
+					<select id="authors-group-select" class="gs-select-common" placeholder="Loading Authors...">
+      				</select>
+      			</fieldset>
+
+      			<fieldset>
+		         	<input id="graph_gn" class="button button-primary graph_btn" name="graph_sba_btn" type="button" value="Get Group Numbers for Authors" />
+		       </fieldset>
+
+				<div class="graph-results-holder"></p>
+			</div>
+
+		</div>
+	</body>
+</html>

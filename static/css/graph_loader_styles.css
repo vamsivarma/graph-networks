@@ -1,0 +1,36 @@
+#graph-search-holder #ss-overlay {
+    position: fixed; 
+    display: none; 
+    width: 100%; 
+    height: 100%; 
+    top: 0; 
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5); 
+    z-index: 9991;
+}
+
+#graph-search-holder #ss-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;  
+  border: 12px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 12px solid #2196F3;
+  width: 60px;
+  height: 60px;
+  -webkit-animation: ss-spin 2s linear infinite;
+  animation: ss-spin 2s linear infinite;
+  z-index: 9992;
+}
+
+@-webkit-keyframes ss-spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes ss-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

@@ -26,7 +26,7 @@ class get_conferences:
     def GET(self):
 
         output = {
-                'conferences_map': gim.gw.get_conferences()
+                'conferences_list': gim.gw.get_conferences()
                 }
 
         web.header('Content-Type', 'application/json')
@@ -36,7 +36,7 @@ class get_authors:
     def GET(self):
         
         output = {
-                'authors_list': gim.gw.get_conferences()
+                'authors_list': gim.gw.get_authors()
                 }
         
         web.header('Content-Type', 'application/json')

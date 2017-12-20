@@ -1,0 +1,90 @@
+a, div {
+    outline: 0;
+}
+
+h1 {
+    color: #23282d;
+    font-size: 2em;
+    margin: .67em 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    display: block;
+    font-weight: 600;
+}
+
+fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+strong, b {
+    font-weight: 600;
+}
+
+body {
+    color: #444;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    font-size: 13px;
+    line-height: 1.4em;
+    min-width: 600px;
+    padding: 40px;
+    overflow-x: hidden;
+}
+
+ul {
+    list-style: none;
+}
+
+ul, ol {
+    padding: 0;
+}
+
+h2, h3 {
+    color: #23282d;
+    font-size: 1.3em;
+    margin: 1em 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    display: block;
+    font-weight: 600;
+}
+
+li, dd {
+    margin-bottom: 6px;
+}
+
+a {
+    color: #0073aa;
+    -webkit-transition-property: border, background, color;
+    transition-property: border, background, color;
+    -webkit-transition-duration: .05s;
+    transition-duration: .05s;
+    -webkit-transition-timing-function: ease-in-out;
+    transition-timing-function: ease-in-out;
+}
+
+
+.button-primary {
+    text-shadow: 0 -1px 1px #006799, 1px 0 1px #006799, 0 1px 1px #006799, -1px 0 1px #006799;
+    vertical-align: top;
+    display: inline-block;
+    line-height: 26px;
+    margin: 0;
+    padding: 0 10px 1px;
+    cursor: pointer;
+    border-width: 1px;
+    border-style: solid;
+    -webkit-appearance: none;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    white-space: nowrap;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box; 
+    background: #008ec2;
+    border-color: #006799;
+    color: #fff; 
+}
