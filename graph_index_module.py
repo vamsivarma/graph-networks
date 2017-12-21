@@ -180,7 +180,7 @@ class Graph_Operations:
     
     operations_meta = {
                 'subset_nodes': list(set([270587, 270585, 524503, 365179, 33951, 112985, 364898, 255487, 166813, 250148])),
-                'conference_name': 'conf/pkdd/2011-1',
+                'conference_name': 'conf/nips/2016',
                 'hop_distance': 2,
                 'author_proximity_id': gi.authors_map['michel verleysen'], #paulo costa
                 'sp_author_id_1': gi.authors_map['aris anagnostopoulos'], #daniel hackenberg
@@ -215,23 +215,26 @@ class Graph_Operations:
         if serverFlag:
             # modify this part adding a dictonary
             print('Some centralities measures for nodes selected in our subgraph!')
-            
+          
         authorsDataset = []    
         
         for author_id in conf_authors:
             
-            cur_author_ary = [author_id, gi.authors_rev_map[author_id], degree[author_id], closeness[author_id], betweenness[author_id]]
-            
-            if serverFlag:
+            if author_id in gi.authors_rev_map:
                 
-                print('Author_id: ' + str(cur_author_ary[0]))
-                print('')
-                print('Degree Centrality: ' + str(cur_author_ary[2]) )
-                print('Closeness Centrality: ' + str(cur_author_ary[3]))
-                print('Betweenness Centrality: ' + str(cur_author_ary[4]))
-                print('')
-            else:
-                authorsDataset.append(cur_author_ary)
+                cur_author_ary = [author_id, gi.authors_rev_map[author_id], degree[author_id], closeness[author_id], betweenness[author_id]]
+                
+                if serverFlag:
+                    
+                    print('Author_id: ' + str(cur_author_ary[0]))
+                    print('')
+                    print('Degree Centrality: ' + str(cur_author_ary[2]) )
+                    print('Closeness Centrality: ' + str(cur_author_ary[3]))
+                    print('Betweenness Centrality: ' + str(cur_author_ary[4]))
+                    print('')
+                else:
+                    authorsDataset.append(cur_author_ary)
+    
         
         nx.draw(k)
         
@@ -239,6 +242,7 @@ class Graph_Operations:
             plt.savefig("static/images/centrality/centrality_" + str(conf_details[0]))
         
         return authorsDataset
+        
     
     #POINT 2.2 
     def calculate_subgraph(self, serverFlag):
@@ -397,7 +401,7 @@ class Graph_Operations:
                 
     def __init__(self):
         
-        self.calculate_centralities(True)
+        #self.calculate_centralities(True)
         #self.calculate_subgraph(True)
         #self.find_path_given_author(True)
         

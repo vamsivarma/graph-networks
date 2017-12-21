@@ -262,11 +262,13 @@ $(document).ready(function($) {
       //Need to do the DOM Manipulation more efficiently
       moduleHolderElem.find('#centrality-graph').html("<img width='800px' height='500px' src='static/images/centrality/centrality_" + conf_id + ".png' />");
 
-      moduleHolderElem.find('#centrality_table').DataTable({
-        data: response.cDataset,
-        columns: graphTabDOMObj[curTabId]['columnsAry']
-      });
+      var centralityTableElem = moduleHolderElem.find('#centrality_table');
 
+      centralityTableElem.DataTable({
+          destroy: true,
+          data: response.cDataset,
+          columns: graphTabDOMObj[curTabId]['columnsAry']
+      });
     } 
 
     function find_centralities_failure(xhr, textStatus, errorThrown) {
