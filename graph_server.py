@@ -54,17 +54,13 @@ class find_centralities:
         cData = web.input()
         conf_id = int(cData['conf_id'])
         
-        print('Inside Centralities')
-        print(conf_id)
-        
-        '''
         output = {
-                'centralities': gim.gw.find_centralities(conf_id)
+                'conf_id': conf_id,
+                'cDataset': gim.gw.find_centralities(conf_id)
                 }
         
         web.header('Content-Type', 'application/json')
         return json.dumps(output)
-        '''
 
 class find_proximity:
     def GET(self):

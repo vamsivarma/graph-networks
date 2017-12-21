@@ -11,7 +11,7 @@ from heapq import *
 import itertools
 import networkx as nx
 import json
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 
 
@@ -34,6 +34,9 @@ class Graph_Index:
     
     #Conference ID to Conference Name map
     conf_rev_map = {}
+    
+    #Author ID to Author Name
+    authors_rev_map = {}
     
     nodes_len = 100
     
@@ -104,11 +107,16 @@ class Graph_Index:
         authors_ui = []
         
         for author in self.authors_map:
+            
+            cur_author_id = self.authors_map[author]
+            
             cur_author_dict = {
-                    "id": self.authors_map[author],
+                    "id": cur_author_id,
                     "text": author.title()
                     }
             authors_ui.append(cur_author_dict)
+            
+            self.authors_rev_map[cur_author_id] = author.title()
             
         return authors_ui
             
@@ -207,22 +215,30 @@ class Graph_Operations:
         if serverFlag:
             # modify this part adding a dictonary
             print('Some centralities measures for nodes selected in our subgraph!')
+            
+        authorsDataset = []    
         
-        for author in conf_authors:
+        for author_id in conf_authors:
+            
+            cur_author_ary = [author_id, gi.authors_rev_map[author_id], degree[author_id], closeness[author_id], betweenness[author_id]]
             
             if serverFlag:
                 
-                print('author_id: ' + str(author))
+                print('Author_id: ' + str(cur_author_ary[0]))
                 print('')
-                print('degree centrality: ' +str(degree[author]))
-                print('closeness centrality: ' +str(closeness[author]))
-                print('betweenness centrality: ' +str(betweenness[author]))
+                print('Degree Centrality: ' + str(cur_author_ary[2]) )
+                print('Closeness Centrality: ' + str(cur_author_ary[3]))
+                print('Betweenness Centrality: ' + str(cur_author_ary[4]))
                 print('')
+            else:
+                authorsDataset.append(cur_author_ary)
         
+        nx.draw(k)
         
-        if serverFlag:
-            nx.draw(k)
-            #nx.info(k)
+        if not serverFlag:
+            plt.savefig("static/images/centrality/centrality_" + str(conf_details[0]))
+        
+        return authorsDataset
     
     #POINT 2.2 
     def calculate_subgraph(self, serverFlag):
@@ -381,7 +397,7 @@ class Graph_Operations:
                 
     def __init__(self):
         
-        #self.calculate_centralities(True)
+        self.calculate_centralities(True)
         #self.calculate_subgraph(True)
         #self.find_path_given_author(True)
         
