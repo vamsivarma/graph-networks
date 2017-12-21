@@ -88,20 +88,18 @@ class find_shortest_path:
         sData = web.input()
         author1_id = int(sData['author1_id'])
         author2_id = int(sData['author2_id'])
+        author1_name = sData['author1_name']
+        author2_name = sData['author2_name']
         
-        
-        print("In Shortest Path...")
-        print(author1_id)
-        print(author2_id)
-        
-        '''
         output = {
-                'authors_list': gim.gw.find_shortest_path(author1_id, author2_id)
+                'shortest_distance': gim.gw.find_shortest_path(author1_id, author2_id),
+                'author1_name': author1_name,
+                'author2_name': author2_name
                 }
         
         web.header('Content-Type', 'application/json')
+        
         return json.dumps(output)
-        '''
     
 class find_author_group_numbers:
     def GET(self):

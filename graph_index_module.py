@@ -38,7 +38,7 @@ class Graph_Index:
     #Author ID to Author Name
     authors_rev_map = {}
     
-    nodes_len = 100
+    nodes_len = 1000
     
     def fetch_data(self):     
         self.data = json.load(open('reduced_dblp.json'))
@@ -125,15 +125,16 @@ class Graph_Index:
        
         #Removing the duplicate entries
         self.conferences_list = list(set(self.conferences_list))
-        self.authors_list = list(set(self.authors_list))   
+        self.authors_list = list(set(self.authors_list))
+
+        #self.remove_unreachable_nodes()
+
+        #self.authors_list = self.G.edge.keys()        
         
         self.authors_list_ui = self.formatAuthorListForUI()
         
         self.conferences_list_ui = []
         
-        
-
-
         for conf in self.conferences_map:
             cur_conf_dict = {
                     "id": self.conferences_map[conf][0],
@@ -142,10 +143,14 @@ class Graph_Index:
             self.conferences_map[conf][1] = list(set(self.conferences_map[conf][1]))
             self.conferences_list_ui.append(cur_conf_dict)
             
-            self.conf_rev_map[cur_conf_dict['id']] = conf
-            
-            
-            
+            self.conf_rev_map[cur_conf_dict['id']] = conf    
+
+    def remove_unreachable_nodes(self):
+
+        #remove isolated nodes
+        for node in self.G.edge.keys():
+            if self.G.degree(node)==0:
+                self.G.remove_node(node)       
 
     def create_indexes(self):
 
@@ -347,29 +352,33 @@ class Graph_Operations:
 
     def find_path_given_author(self, serverFlag): 
         
+        author_1 = self.operations_meta['sp_author_id_1']
+        author_2 = self.operations_meta['sp_author_id_2']
+        
         try:
             
-            path = self.shortest_path_advanced(gi.G, self.operations_meta['sp_author_id_1'], self.operations_meta['sp_author_id_2'], False)  
+            path = self.shortest_path_advanced(gi.G, author_1, author_2, False)  
             
-            if serverFlag:
-                print(path)
-        
-            '''
+            shortest_distance = 0
+            
             if(len(path.keys())):
-                if path[aris_id]:
-                    print(path[aris_id])
+                if author_2 in path:
+                    shortest_distance = path[author_2]
+                    if serverFlag:
+                        print(shortest_distance)
                 else:
-                   print('No path') 
+                   if serverFlag: 
+                       print('No path')
             else:
-                print('No path')
-            '''
+                if serverFlag: 
+                    print('No path')
         
         except nx.NetworkXNoPath:
             
             if serverFlag:
                 print('No path')
                 
-        return path
+        return shortest_distance
     
     def update_the_neighbour_nodes(self, author_id, author_index):
     
@@ -442,7 +451,6 @@ class Graph_Operations:
                 self.update_the_neighbour_nodes(cur_author, i)
 
 
-
             for i in range(self.authors_len):
                 cur_grp_list = self.group_matrix[i]
                 
@@ -458,7 +466,7 @@ class Graph_Operations:
     def __init__(self):
         
         #self.calculate_centralities(True)
-        self.calculate_subgraph(True)
+        #self.calculate_subgraph(True)
         #self.find_path_given_author(True)
         
         pass

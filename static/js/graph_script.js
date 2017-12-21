@@ -361,9 +361,15 @@ $(document).ready(function($) {
 
       if(author1Id !== null && author2Id !== null) {
 
+        //Show loader
+        overlayElem.show();
+
+        var author1_name = author1SelElem.select2('data')[0]['text'];
+        var author2_name = author2SelElem.select2('data')[0]['text'];
+
         $.ajax({
           type: 'GET',
-          url: baseURL + "find_shortest_path?author1_id=" + author1Id + "&author2_id=" + author2Id,
+          url: baseURL + "find_shortest_path?author1_id=" + author1Id + "&author2_id=" + author2Id + "&author1_name=" + author1_name + "&author2_name=" + author2_name,
           timeout: 1000000, //@TODO: Need to revisit this
           dataType: 'json',
           success: find_shortestpath_success.bind(this),
@@ -376,9 +382,23 @@ $(document).ready(function($) {
 
     function find_shortestpath_success(response) {
 
+      //Hide loader
+      overlayElem.hide();
+
+      var author1_name = response['author1_name'];
+      var author2_name = response['author2_name'];
+      var cur_sd = response['shortest_distance'];
+
+      var curTabHolderElem = graphTabDOMObj[curTabId]['tabHolder'];
+
+      curTabHolderElem.find('.graph-results-holder').html('<h3>Distance between ' + author1_name + ' and ' + author2_name + ' is ' + cur_sd + '</h3>');
+
     } 
 
     function find_shortestpath_failure(xhr, textStatus, errorThrown) {
+      
+      //Hide loader
+      overlayElem.hide();
 
     }
     //End - Functions related to Shortest Path
