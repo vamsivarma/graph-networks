@@ -51,8 +51,10 @@ $(document).ready(function($) {
                               'placeholder': 'Select an author to generate proximity graph',
                               'multiple': false
                             }],
-          'callBackFunc': searchByAuthor.bind(this)
-
+          'callBackFunc': searchByAuthor.bind(this),
+          'columnsAry': [{'title':'Author ID'},
+                        {'title':'Author Name'},
+                        {'title':'Distance From Selected Author'}]
     }, {
           'tabHolder': 'findShortestPath',
           'buttonElem': 'graph_sp',
@@ -234,14 +236,16 @@ $(document).ready(function($) {
       var curConfSelElem = returnCurrentSelectDOM(0);
       var selectedConfId = curConfSelElem.val();
 
-      //Show loader
-      overlayElem.show();
-
       if(selectedConfId !== null) {
+
+        //Show loader
+        overlayElem.show();
+
+        var conf_name = curConfSelElem.select2('data')[0]['text'];
 
         $.ajax({
           type: 'GET',
-          url: baseURL + "find_centralities?conf_id=" + selectedConfId,
+          url: baseURL + "find_centralities?conf_id=" + selectedConfId + '&conf_name=' + conf_name,
           timeout: 1000000, //@TODO: Need to revisit this
           dataType: 'json',
           success: find_centralities_success.bind(this),
@@ -258,11 +262,15 @@ $(document).ready(function($) {
       overlayElem.hide();
 
       var conf_id = response['conf_id'];
+      var conf_name = response['conf_name'];
 
       //Need to do the DOM Manipulation more efficiently
-      moduleHolderElem.find('#centrality-graph').html("<img width='800px' height='500px' src='static/images/centrality/centrality_" + conf_id + ".png' />");
+      moduleHolderElem.find('#centrality-title').html("<h3>Centrality results for " + conf_name + "</h3>");
+      moduleHolderElem.find('#centrality-graph').html("<h3>Centrality Graph:</h3><img width='800px' height='500px' src='static/images/centrality/centrality_" + conf_id + ".png' />");
 
       var centralityTableElem = moduleHolderElem.find('#centrality_table');
+
+      moduleHolderElem.find('#centrality-table-title').html("<h3>Centrality Table:</h3>");
 
       centralityTableElem.DataTable({
           destroy: true,
@@ -286,11 +294,18 @@ $(document).ready(function($) {
       var curAuthorSelElem = returnCurrentSelectDOM(0);
       var selectedAuthorId = curAuthorSelElem.val();
 
+      var hop_count = moduleHolderElem.find('#graph_hc').val();
+
       if(selectedAuthorId !== null) {
+
+        //Show loader
+        overlayElem.show();
+
+        var author_name = curAuthorSelElem.select2('data')[0]['text']
 
         $.ajax({
           type: 'GET',
-          url: baseURL + "find_proximity?author_id=" + selectedAuthorId,
+          url: baseURL + "find_proximity?proximity_id=" + selectedAuthorId + "&hop_count=" + hop_count + "&proximity_name=" + author_name,
           timeout: 1000000, //@TODO: Need to revisit this
           dataType: 'json',
           success: find_proximities_success.bind(this),
@@ -303,10 +318,34 @@ $(document).ready(function($) {
 
     function find_proximities_success(response) {
 
+      //Hide loader
+      overlayElem.hide();
+
+      var proximity_id = response['proximity_id'];
+      var proximity_name = response['proximity_name'];
+
+      moduleHolderElem.find('#proximity-title').html("<h3>Proximity results for " + proximity_name + "</h3>");
+      //Need to do the DOM Manipulation more efficiently
+      moduleHolderElem.find('#proximity-graph').html("<h3>Proximity Graph:</h3><img width='800px' height='500px' src='static/images/proximity/proximity_" + proximity_id + ".png' />");
+      moduleHolderElem.find('#proximity-table-title').html("<h3>Proximity Table:</h3>");
+
+      var proximityTableElem = moduleHolderElem.find('#proximity_table');
+
+      var columnsAry = graphTabDOMObj[curTabId]['columnsAry'];
+      columnsAry[columnsAry.length - 1]['title'] = 'Distance From ' + proximity_name;
+
+      proximityTableElem.DataTable({
+          destroy: true,
+          data: response.pDataset,
+          columns: columnsAry
+      });
+
     } 
 
     function find_proximities_failure(xhr, textStatus, errorThrown) {
 
+      //Hide loader
+      overlayElem.hide();
     }
     //End - Functions related to Proximity
 

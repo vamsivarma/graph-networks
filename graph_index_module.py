@@ -182,7 +182,7 @@ class Graph_Operations:
                 'subset_nodes': list(set([270587, 270585, 524503, 365179, 33951, 112985, 364898, 255487, 166813, 250148])),
                 'conference_name': 'conf/nips/2016',
                 'hop_distance': 2,
-                'author_proximity_id': gi.authors_map['michel verleysen'], #paulo costa
+                'author_proximity_id': gi.authors_map['wamberto weber vasconcelos'], #paulo costa
                 'sp_author_id_1': gi.authors_map['aris anagnostopoulos'], #daniel hackenberg
                 'sp_author_id_2': gi.authors_map['george brova'] #damien djaouti
             }
@@ -240,6 +240,7 @@ class Graph_Operations:
         
         if not serverFlag:
             plt.savefig("static/images/centrality/centrality_" + str(conf_details[0]))
+            plt.clf()
         
         return authorsDataset
         
@@ -247,19 +248,74 @@ class Graph_Operations:
     #POINT 2.2 
     def calculate_subgraph(self, serverFlag):
         
-        #path=nx.single_source_shortest_path_length(G=G,source= author_id,cutoff=d)
-        kk=nx.ego_graph(G= gi.G, n= self.operations_meta['author_proximity_id'], radius= self.operations_meta['hop_distance'], undirected= True, center= True)
+        author_id = self.operations_meta['author_proximity_id']
         
-        if serverFlag:
-            nx.draw(kk)
-
+        proximityDataset = []
+        
+        #path=nx.single_source_shortest_path_length(G=G,source= author_id,cutoff=d)
+        kk=nx.ego_graph(G= gi.G, n= author_id, radius= self.operations_meta['hop_distance'], center= True, undirected= True)
+        
+        '''
+        sub_graph_nodes = self.node_hop_neighbors(gi.G, author_id, self.operations_meta['hop_distance'])
+        print(sub_graph_nodes)
+        kk = gi.G.subgraph(sub_graph_nodes)
+        '''
+        
+        nx.draw(kk)
+        
+        if not serverFlag:
+            
+            plt.savefig("static/images/proximity/proximity_" + str(author_id))
+            plt.clf()
+            
+            for sg_author_id in kk.edge.keys():
+                
+                if(sg_author_id != author_id):
+                    
+                    if sg_author_id in gi.authors_rev_map:
+                        
+                        cur_weight = 0.0
+                        cur_weight_obj = self.shortest_path_advanced(kk, author_id, sg_author_id, True) 
+                        
+                        if sg_author_id in cur_weight_obj:
+                            cur_weight = cur_weight_obj[sg_author_id]                        
+                        
+                        
+                        cur_author_ary = [sg_author_id, gi.authors_rev_map[sg_author_id], cur_weight]
+                        
+                        proximityDataset.append(cur_author_ary)
+                        
+        return proximityDataset
+        
+    #function that returns the nodes at hop distance d
+    def node_hop_neighbors(self, G, start, d):
+        visit = []
+        to_visit = [start]
+        for i in range(d):
+            temp = []
+            for n in to_visit:
+                if n not in visit:
+                    temp += G.neighbors(n)
+            visit = list(set(visit).union(to_visit))
+            to_visit = temp
+        visit = list(set(visit).union(to_visit))
+        
+        return visit
+                    
 
     #POINT 3.1
     #@TODO: Need to improve the number of iterations here...
-    def shortest_path_advanced(self, G, start, end):
+    def shortest_path_advanced(self, G, start, end, partialFlag):
+        
+        authors_list = []
+        
+        if partialFlag:
+            authors_list = G.edge.keys()
+        else:
+            authors_list = gi.authors_list
         
         dict1 = defaultdict(list)
-        for author1 in gi.authors_list:
+        for author1 in authors_list:
             for author2 in G[author1].keys():
                     dict1[author1].append((author2, G[author1][author2]['weight']))
             
@@ -293,7 +349,7 @@ class Graph_Operations:
         
         try:
             
-            path = self.shortest_path_advanced(gi.G, self.operations_meta['sp_author_id_1'], self.operations_meta['sp_author_id_2'])  
+            path = self.shortest_path_advanced(gi.G, self.operations_meta['sp_author_id_1'], self.operations_meta['sp_author_id_2'], False)  
             
             if serverFlag:
                 print(path)
@@ -368,7 +424,7 @@ class Graph_Operations:
                                 
                                 iterations += 1
                                 
-                                s_p = self.shortest_path_advanced(gi.G, cur_author, cur_subset_node)
+                                s_p = self.shortest_path_advanced(gi.G, cur_author, cur_subset_node, False)
                             
                                 if(len(s_p.keys())):
                                     self.cur_author_dist_dict.update(s_p)
@@ -402,7 +458,7 @@ class Graph_Operations:
     def __init__(self):
         
         #self.calculate_centralities(True)
-        #self.calculate_subgraph(True)
+        self.calculate_subgraph(True)
         #self.find_path_given_author(True)
         
         pass
@@ -431,21 +487,21 @@ class Graph_Web:
     
     def find_proximity(self, proximity_id, hop_distance):
         
-        self.operations_meta['author_proximity_id'] = proximity_id
-        self.operations_meta['hop_distance'] = hop_distance
+        go.operations_meta['author_proximity_id'] = proximity_id
+        go.operations_meta['hop_distance'] = hop_distance
         
         return go.calculate_subgraph(False)
     
     def find_shortest_path(self, author1_id, author2_id):
         
-        self.operations_meta['sp_author_id_1'] = author1_id
-        self.operations_meta['sp_author_id_2'] = author2_id
+        go.operations_meta['sp_author_id_1'] = author1_id
+        go.operations_meta['sp_author_id_2'] = author2_id
         
         return go.find_path_given_author(False)
     
     def find_author_group_numbers(self, author_subset):
         
-        self.operations_meta['subset_nodes'] = author_subset
+        go.operations_meta['subset_nodes'] = author_subset
         
         return go.find_graph_number(False)
         

@@ -53,9 +53,11 @@ class find_centralities:
         
         cData = web.input()
         conf_id = int(cData['conf_id'])
+        conf_name = cData['conf_name']
         
         output = {
                 'conf_id': conf_id,
+                'conf_name': conf_name,
                 'cDataset': gim.gw.find_centralities(conf_id)
                 }
         
@@ -66,19 +68,19 @@ class find_proximity:
     def GET(self):
         
         pData = web.input()
-        author_id = int(pData['author_id'])
+        proximity_id = int(pData['proximity_id'])
+        proximity_name = pData['proximity_name']
+        hop_count = int(pData['hop_count'])
         
-        print("In Find Proximity...")
-        print(author_id)
         
-        '''
         output = {
-                'authors_list': gim.gw.find_proximity(author_id)
+                'proximity_id': proximity_id,
+                'proximity_name': proximity_name,
+                'pDataset': gim.gw.find_proximity(proximity_id, hop_count)
                 }
         
         web.header('Content-Type', 'application/json')
         return json.dumps(output)
-        '''
     
 class find_shortest_path:
     def GET(self):

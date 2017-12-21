@@ -102,7 +102,9 @@
   margin-top: 40px;
 }
 
-#centrality_table_wrapper, #example_group_wrapper {
+#centrality_table_wrapper, 
+#example_group_wrapper, 
+#proximity_table_wrapper {
   padding: 10px;
 }
 
