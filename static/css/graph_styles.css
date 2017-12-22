@@ -104,7 +104,8 @@
 
 #centrality_table_wrapper, 
 #example_group_wrapper, 
-#proximity_table_wrapper {
+#proximity_table_wrapper,
+#group_table_wrapper {
   padding: 10px;
 }
 

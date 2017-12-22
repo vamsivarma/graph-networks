@@ -428,10 +428,22 @@ $(document).ready(function($) {
       if( selectedAuthors.length ) {
 
         selectedAuthors = selectedAuthors.join(',');
+        var selectedAuthorsAry = authorsSelElem.select2('data');
+
+        var selectedAuthorNames = [];
+
+        selectedAuthorsAry.forEach(function(curAUthorObj) {
+          selectedAuthorNames.push(curAUthorObj['text'])
+        });
+
+        selectedAuthorNames = selectedAuthorNames.join(",");
+
+        //Show loader
+        overlayElem.show();
 
         $.ajax({
           type: 'GET',
-          url: baseURL + "find_author_group_numbers?authors_subset=" + selectedAuthors,
+          url: baseURL + "find_author_group_numbers?authors_subset=" + selectedAuthors + "&author_names=" + selectedAuthorNames,
           timeout: 1000000, //@TODO: Need to revisit this
           dataType: 'json',
           success: find_groupnumber_success.bind(this),
@@ -444,10 +456,28 @@ $(document).ready(function($) {
 
     function find_groupnumber_success(response) {
 
+      var author_names = response['author_names'];
+
+      //Hide loader
+      overlayElem.hide();
+
+      moduleHolderElem.find('#group-table-title').html("<h3>Group Table wrto " + author_names  + "</h3>");
+
+      var groupTableElem = moduleHolderElem.find('#group_table');
+
+      var columnsAry = graphTabDOMObj[curTabId]['columnsAry'];
+
+      groupTableElem.DataTable({
+          destroy: true,
+          data: response.gDataset,
+          columns: columnsAry
+      });
+
     } 
 
     function find_groupnumber_failure(xhr, textStatus, errorThrown) {
-
+      //Hide loader
+      overlayElem.hide();
     }
     //End - Functions related to Group Number
 

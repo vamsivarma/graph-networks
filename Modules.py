@@ -37,7 +37,7 @@ class Graph_Index:
     #Author ID to Author Name
     authors_rev_map = {}
     
-    nodes_len = 1000
+    nodes_len = 500
     
     def fetch_data(self):     
         self.data = json.load(open('reduced_dblp.json'))
@@ -170,7 +170,7 @@ class Graph_Index:
         
         self.fetch_data()
         
-        self.nodes_len = len(self.data)
+        #self.nodes_len = len(self.data)
         
         self.build_graph()
         self.remove_duplicates()
@@ -181,12 +181,12 @@ gi = Graph_Index()
 class Graph_Operations:
     
     operations_meta = {
-                'subset_nodes': list(set([270587, 270585, 524503, 365179, 33951, 112985, 364898, 255487, 166813, 250148])),
+                'subset_nodes':  [255395, 208976],#list(set([270587, 270585, 524503, 365179, 33951, 112985, 364898, 255487, 166813, 250148])),
                 'conference_name': 'conf/nips/2016',
                 'hop_distance': 2,
-                'author_proximity_id': gi.authors_map['wamberto weber vasconcelos'], #paulo costa
-                'sp_author_id_1': gi.authors_map['aris anagnostopoulos'], #daniel hackenberg
-                'sp_author_id_2': gi.authors_map['george brova'] #damien djaouti
+                'author_proximity_id': '',#gi.authors_map['wamberto weber vasconcelos'], #paulo costa
+                'sp_author_id_1': '',#gi.authors_map['aris anagnostopoulos'], #daniel hackenberg
+                'sp_author_id_2': '', #gi.authors_map['george brova'] #damien djaouti
             }
     
     
@@ -409,57 +409,66 @@ class Graph_Operations:
     #POINT 3.2
     #@TODO: Check if using Numpy arrays will make this effiecient    
     def find_graph_number(self, serverFlag):
-            self.init_group_matrix()
+        
+        self.init_group_matrix()
+        
+
+        iterations = 0
+        for i in range(self.authors_len):
+            cur_author = gi.authors_list[i]
+            self.cur_author_dist_dict = {}
             
-
-            iterations = 0
-            for i in range(self.authors_len):
-                cur_author = gi.authors_list[i]
-                self.cur_author_dist_dict = {}
-                
-                if not self.author_dist_status_map[cur_author]:
-                
-                    for j in range(self.subset_nodes_len):
-                         
-                        cur_subset_node = self.operations_meta['subset_nodes'][j]
-                        cur_node_dist = cur_author
+            if not self.author_dist_status_map[cur_author]:
+            
+                for j in range(self.subset_nodes_len):
+                     
+                    cur_subset_node = self.operations_meta['subset_nodes'][j]
+                    cur_node_dist = cur_author
+                    
+                    if(cur_author != cur_subset_node):
                         
-                        if(cur_author != cur_subset_node):
+                        if cur_subset_node not in self.cur_author_dist_dict:
                             
-                            if cur_subset_node not in self.cur_author_dist_dict:
-                                
-                                iterations += 1
-                                
-                                s_p = self.shortest_path_advanced(gi.G, cur_author, cur_subset_node, False)
+                            iterations += 1
                             
-                                if(len(s_p.keys())):
-                                    self.cur_author_dist_dict.update(s_p)
+                            s_p = self.shortest_path_advanced(gi.G, cur_author, cur_subset_node, False)
+                        
+                            if(len(s_p.keys())):
+                                self.cur_author_dist_dict.update(s_p)
+                                
+                                if cur_subset_node in self.cur_author_dist_dict:
+                                    cur_node_dist = self.cur_author_dist_dict[cur_subset_node]
                                     
-                                    if cur_subset_node in self.cur_author_dist_dict:
-                                        cur_node_dist = self.cur_author_dist_dict[cur_subset_node]
-                                        
-                            else:
-                                cur_node_dist =  self.cur_author_dist_dict[cur_subset_node]
-                            
-                            self.group_matrix[i][j] = cur_node_dist
-                    
-                    self.author_dist_status_map[cur_author] = True
-                    
-                self.update_the_neighbour_nodes(cur_author, i)
+                        else:
+                            cur_node_dist =  self.cur_author_dist_dict[cur_subset_node]
+                        
+                        self.group_matrix[i][j] = cur_node_dist
+                
+                self.author_dist_status_map[cur_author] = True
+                
+            self.update_the_neighbour_nodes(cur_author, i)
 
+        groupDataset = []
+            
+        for i in range(self.authors_len):
+            cur_author_id = gi.authors_list[i]
+            cur_grp_list = self.group_matrix[i]
+            
+            cur_grp_number = min(cur_grp_list)
+            
+            if(cur_grp_number == gi.authors_list[i]):
+                cur_grp_number = 0
+            
+            if serverFlag:
+                print("Group Number for: " + str(cur_author_id) + ' is: ' + str(cur_grp_number))
+            else:
+                if cur_author_id in gi.authors_rev_map: 
+                    cur_author_name = gi.authors_rev_map[cur_author_id]
+                    cur_node_grp = [cur_author_id, cur_author_name, cur_grp_number] 
+                    groupDataset.append(cur_node_grp) 
+            
+        return groupDataset
 
-            for i in range(self.authors_len):
-                cur_grp_list = self.group_matrix[i]
-                
-                cur_grp_number = min(cur_grp_list)
-                
-                if(cur_grp_number == gi.authors_list[i]):
-                    cur_grp_number = 0
-                
-                if serverFlag:
-                    print("Group Number for: " + str(gi.authors_list[i]) + ' is: ' + str(cur_grp_number))
-    
-                
     def __init__(self):
         
         #self.calculate_centralities(True)
@@ -555,7 +564,7 @@ class get_authors:
         
         web.header('Content-Type', 'application/json')
         return json.dumps(output)
-            
+
 class find_centralities:
     def GET(self):
         
@@ -614,9 +623,14 @@ class find_author_group_numbers:
         
         gData = web.input()
         authors_subset = [int(author) for author in gData['authors_subset'].split(',')]
+        author_names = gData['author_names']
 
+        #print(authors_subset)
+        
         output = {
-                'authors_list': gw.find_author_group_numbers(authors_subset)
+                'author_names': author_names,
+                'gDataset': gw.find_author_group_numbers(authors_subset),
+                'authors_subset': authors_subset
                 }
         
         web.header('Content-Type', 'application/json')
