@@ -28,6 +28,7 @@ class Graph_Index:
     authors_map = {}
     data = []
     
+    #Preparing authors list and conferences list to send as API response to UI
     authors_list_ui = [] 
     conferences_list_ui = []
     
@@ -125,10 +126,6 @@ class Graph_Index:
         #Removing the duplicate entries
         self.conferences_list = list(set(self.conferences_list))
         self.authors_list = list(set(self.authors_list))
-
-        #self.remove_unreachable_nodes()
-
-        #self.authors_list = self.G.edge.keys()        
         
         self.authors_list_ui = self.formatAuthorListForUI()
         
@@ -142,14 +139,7 @@ class Graph_Index:
             self.conferences_map[conf][1] = list(set(self.conferences_map[conf][1]))
             self.conferences_list_ui.append(cur_conf_dict)
             
-            self.conf_rev_map[cur_conf_dict['id']] = conf    
-
-    def remove_unreachable_nodes(self):
-
-        #remove isolated nodes
-        for node in self.G.edge.keys():
-            if self.G.degree(node)==0:
-                self.G.remove_node(node)       
+            self.conf_rev_map[cur_conf_dict['id']] = conf        
 
     def create_indexes(self):
 
@@ -170,7 +160,7 @@ class Graph_Index:
         
         self.fetch_data()
         
-        #self.nodes_len = len(self.data)
+        self.nodes_len = len(self.data)
         
         self.build_graph()
         self.remove_duplicates()
@@ -180,21 +170,20 @@ gi = Graph_Index()
 
 class Graph_Operations:
     
+    #Metadata containing list of configuration options to do operations on Graph
     operations_meta = {
-                'subset_nodes':  [255395, 208976],#list(set([270587, 270585, 524503, 365179, 33951, 112985, 364898, 255487, 166813, 250148])),
-                'conference_name': 'conf/nips/2016',
+                'subset_nodes':  [255395, 208976],
+                'conference_name': '', #'conf/iccs/2010',
                 'hop_distance': 2,
-                'author_proximity_id': '',#gi.authors_map['wamberto weber vasconcelos'], #paulo costa
-                'sp_author_id_1': '',#gi.authors_map['aris anagnostopoulos'], #daniel hackenberg
-                'sp_author_id_2': '', #gi.authors_map['george brova'] #damien djaouti
+                'author_proximity_id': 24568,#gi.authors_map['wamberto weber vasconcelos'], 
+                'sp_author_id_1': 24569, #gi.authors_map['aris anagnostopoulos'], 
+                'sp_author_id_2': 24570 #gi.authors_map['george brova']
             }
     
-    
-    
-    #subset_nodes = list(set([270587, 270585]))    
+       
     subset_nodes_len = len(operations_meta['subset_nodes'])
 
-    #Build a 2 dimentional matrix based on total number of vertexes and subset
+    #Two dimentional array based on total number of vertexes and subset
     group_matrix = []
     author_dist_status_map = {}    
     
@@ -257,12 +246,6 @@ class Graph_Operations:
         #path=nx.single_source_shortest_path_length(G=G,source= author_id,cutoff=d)
         kk=nx.ego_graph(G= gi.G, n= author_id, radius= self.operations_meta['hop_distance'], center= True, undirected= True)
         
-        '''
-        sub_graph_nodes = self.node_hop_neighbors(gi.G, author_id, self.operations_meta['hop_distance'])
-        print(sub_graph_nodes)
-        kk = gi.G.subgraph(sub_graph_nodes)
-        '''
-        
         nx.draw(kk)
         
         if not serverFlag:
@@ -288,22 +271,7 @@ class Graph_Operations:
                         proximityDataset.append(cur_author_ary)
                         
         return proximityDataset
-        
-    #function that returns the nodes at hop distance d
-    def node_hop_neighbors(self, G, start, d):
-        visit = []
-        to_visit = [start]
-        for i in range(d):
-            temp = []
-            for n in to_visit:
-                if n not in visit:
-                    temp += G.neighbors(n)
-            visit = list(set(visit).union(to_visit))
-            to_visit = temp
-        visit = list(set(visit).union(to_visit))
-        
-        return visit
-                    
+                      
 
     #POINT 3.1
     #@TODO: Need to improve the number of iterations here...
@@ -325,6 +293,7 @@ class Graph_Operations:
         pathList = [[0,[start,0],()]]
         seen = set()
         
+        #Dictionary which contains total distance at every node in a path
         pathInfoList = {}
         
         while pathList:
@@ -363,6 +332,9 @@ class Graph_Operations:
                     shortest_distance = path[author_2]
                     if serverFlag:
                         print(shortest_distance)
+                        #kk = gi.G.subgraph(path.keys())
+                        #nx.draw(kk)
+                        
                 else:
                    if serverFlag: 
                        print('No path')
@@ -377,8 +349,9 @@ class Graph_Operations:
                 
         return shortest_distance
     
+    #For updating neighbour nodes with the shortest path if the weight between the authors is 0.0
+    #To reduce the no of times shortest path algoritm is invoked there by improving the response time for calculating the group numbers of a given graph
     def update_the_neighbour_nodes(self, author_id, author_index):
-    
 
         for na in gi.G[author_id].keys():
             if gi.G[author_id][na]['weight'] == 0.0 and not self.author_dist_status_map[na]:
@@ -412,12 +385,14 @@ class Graph_Operations:
         
         self.init_group_matrix()
         
-
+        #variable which holds no of times shortest path algoritm is invoked
         iterations = 0
+
         for i in range(self.authors_len):
             cur_author = gi.authors_list[i]
             self.cur_author_dist_dict = {}
             
+            #Check if the node is already is updated with the shortest path values
             if not self.author_dist_status_map[cur_author]:
             
                 for j in range(self.subset_nodes_len):
@@ -436,6 +411,8 @@ class Graph_Operations:
                             if(len(s_p.keys())):
                                 self.cur_author_dist_dict.update(s_p)
                                 
+                                #Check if the shortest path between node and given node in the group is already present
+                                #If yes then directly update the path value else invoke the shortest path algorithm
                                 if cur_subset_node in self.cur_author_dist_dict:
                                     cur_node_dist = self.cur_author_dist_dict[cur_subset_node]
                                     
@@ -449,11 +426,12 @@ class Graph_Operations:
             self.update_the_neighbour_nodes(cur_author, i)
 
         groupDataset = []
-            
+        
         for i in range(self.authors_len):
             cur_author_id = gi.authors_list[i]
             cur_grp_list = self.group_matrix[i]
             
+            #Finding the minimum of shortest paths    
             cur_grp_number = min(cur_grp_list)
             
             if(cur_grp_number == gi.authors_list[i]):
@@ -470,18 +448,26 @@ class Graph_Operations:
         return groupDataset
 
     def __init__(self):
-        
-        #self.calculate_centralities(True)
-        #self.calculate_subgraph(True)
-        #self.find_path_given_author(True)
-        
+
         pass
+        
+        #2.1
+        #self.calculate_centralities(True)
+
+        #2.2
+        #self.calculate_subgraph(True)
+
+        #3.1
+        #self.find_path_given_author(True)
+ 
+        #3.2
         #self.find_graph_number(True)
         
         
 go = Graph_Operations()
 
 
+#Wrapper for exposing the graph operations with the web layer
 class Graph_Web:
     
     #Returns the authors list based on the data stored in G
@@ -492,7 +478,6 @@ class Graph_Web:
     def get_conferences(self):
         return gi.conferences_list_ui
     
-    #Need to do proper exception handling here...
     def find_centralities(self, conf_id):
         
         go.operations_meta['conference_name']  = gi.conf_rev_map[conf_id]
@@ -523,7 +508,6 @@ gw = Graph_Web()
 
 
 #Web Interface Package
-
 urls = (
     '/', 'graph_ui',    
     '/get_conferences', 'get_conferences',
@@ -531,9 +515,7 @@ urls = (
     '/find_centralities', 'find_centralities',
     '/find_proximity', 'find_proximity',
     '/find_shortest_path', 'find_shortest_path',
-    '/find_author_group_numbers', 'find_author_group_numbers'
-    
-    
+    '/find_author_group_numbers', 'find_author_group_numbers'  
 )
 
 
@@ -624,8 +606,6 @@ class find_author_group_numbers:
         gData = web.input()
         authors_subset = [int(author) for author in gData['authors_subset'].split(',')]
         author_names = gData['author_names']
-
-        #print(authors_subset)
         
         output = {
                 'author_names': author_names,
