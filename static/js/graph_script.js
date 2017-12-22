@@ -139,7 +139,7 @@ $(document).ready(function($) {
                                     data: curSelectData,
                                     allowClear: false,
                                     closeOnSelect: !selectMeta['multiple'],
-                                    multiple: selectMeta['multiple']
+                                    multiple: selectMeta['multiple']      
                                 }); 
 
           //curSelectElem.prop("selectedIndex", -1);
@@ -178,9 +178,22 @@ $(document).ready(function($) {
       });
     }
 
+    function sort_array_of_objs(aoob) {
+
+      aoob.sort(function(a, b) {
+        if(a.text < b.text) return -1;
+        if(a.text > b.text) return 1;
+        return 0;
+      });
+
+      return aoob;
+    }
+
     function store_authors_data(response) {
         authorsAPIFlag = false;
         authors_list = response['authors_list'];
+        authors_list = sort_array_of_objs(authors_list);
+
         hideLoader();
     }
 
@@ -208,6 +221,8 @@ $(document).ready(function($) {
       conferencesAPIFlag = false;
 
       conferences_list = response['conferences_list'];
+
+      conferences_list = sort_array_of_objs(conferences_list);
 
       hideLoader();
     }
@@ -333,6 +348,7 @@ $(document).ready(function($) {
 
       var columnsAry = graphTabDOMObj[curTabId]['columnsAry'];
       columnsAry[columnsAry.length - 1]['title'] = 'Distance From ' + proximity_name;
+      columnsAry[columnsAry.length - 1]['sTitle'] = 'Distance From ' + proximity_name;
 
       proximityTableElem.DataTable({
           destroy: true,
